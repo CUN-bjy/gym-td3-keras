@@ -8,6 +8,12 @@ STATUS : [`IN PROGRESS`]()
 
 </br>
 
+### Now
+
+*DDPG-Based Repo Transfered. Not Started TD3 Implementation Yet.*
+
+</br>
+
 ## Reference
 
 [1] Addressing Function Approximation Error in Actor-Critic Methods
