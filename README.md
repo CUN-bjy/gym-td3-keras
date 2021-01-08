@@ -4,7 +4,7 @@ Reference Code : [`gym-ddpg-keras`](https://github.com/CUN-bjy/gym-ddpg-keras)(D
 
 Keras Implementation of TD3(Twin Delayed Deep Deterministic Policy Gradient) with PER(Prioritized Experience Replay) option on OpenAI gym framework
 
-STATUS : [`IN PROGRESS`]()
+STATUS : [`IN PROGRESS`](https://github.com/CUN-bjy/gym-td3-keras/projects/1) <- Project Link
 
 </br>
 
