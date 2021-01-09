@@ -14,6 +14,20 @@ STATUS : [`IN PROGRESS`](https://github.com/CUN-bjy/gym-td3-keras/projects/1) <-
 
 </br>
 
+### To do
+
+*What is differences from DDPG*
+
+1. Overestimation Bias
+   - [ ] double Q-network 
+   - [ ] clipped double q-update
+
+2. Addressing Variance
+   - [ ] delayed policy update
+   - [ ] target policy smoothing
+
+</br>
+
 ## Easy Installation
 
 1. Make an independent environment using `virtualenv`
