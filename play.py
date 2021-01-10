@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
-# Implementation of DDPG(Deep Deterministic Policy Gradient) 
+# Implementation of TD3(Twin Delayed Deep Deterministic Policy Gradient) 
 # on OpenAI gym framwork
 
 
@@ -32,7 +32,7 @@ from tqdm import tqdm
 
 import argparse
 
-from agent.ddpg import ddpgAgent
+from agent.td3 import td3Agent
 
 NUM_EPISODES_ = 1000
 
@@ -49,7 +49,7 @@ def model_play(pretrained_):
 	env = gym.make(models['ant'])
 	
 	# Create Agent model
-	agent = ddpgAgent(env)
+	agent = td3Agent(env)
 
 	if not pretrained_ == None:
 		agent.load_weights(pretrained_)
@@ -96,7 +96,7 @@ def model_play(pretrained_):
 
 
 argparser = argparse.ArgumentParser(
-	description='Train DDPG Agent on the openai gym')
+	description='Train TD3 Agent on the openai gym')
 
 argparser.add_argument(
 	'-w',	'--weights',help='path to pretrained weights')

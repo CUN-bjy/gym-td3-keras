@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
-# Implementation of DDPG(Deep Deterministic Policy Gradient) 
+# Implementation of TD3(Twin Delayed Deep Deterministic Policy Gradient) 
 # on OpenAI gym framwork
 
 
@@ -35,7 +35,7 @@ import pandas as pd
 
 import argparse
 
-from agent.ddpg import ddpgAgent
+from agent.td3 import td3Agent
 
 NUM_EPISODES_ = 20000
 
@@ -59,7 +59,7 @@ def model_train(pretrained_):
 		print('Discrete Action Space')
 
 	# Create Agent model
-	agent = ddpgAgent(env, batch_size=128, w_per=False, is_discrete=is_discrete)
+	agent = td3Agent(env, batch_size=128, w_per=False, is_discrete=is_discrete)
 
 	if not pretrained_ == None:
 		agent.load_weights(pretrained_)
@@ -123,7 +123,7 @@ def model_train(pretrained_):
 						dir_path = "%s/weights"%os.getcwd()
 						if not os.path.isdir(dir_path):
 							os.mkdir(dir_path)
-						path = dir_path+'/'+'gym_ddpg_'
+						path = dir_path+'/'+'gym_td3_'
 						agent.save_weights(path + 'ep%d_%f'%(epi,max_reward))
 
 
@@ -144,7 +144,7 @@ def model_train(pretrained_):
 		dir_path = "%s/weights"%os.getcwd()
 		if not os.path.isdir(dir_path):
 			os.mkdir(dir_path)
-		path = dir_path+'/'+'gym_ddpg_'
+		path = dir_path+'/'+'gym_td3_'
 		agent.save_weights(path +'lastest')
 		env.close()
 
@@ -154,7 +154,7 @@ def model_train(pretrained_):
 
 
 argparser = argparse.ArgumentParser(
-	description='Train DDPG Agent on the openai gym')
+	description='Train TD3 Agent on the openai gym')
 
 argparser.add_argument(
 	'-w',	'--weights',help='path to pretrained weights')

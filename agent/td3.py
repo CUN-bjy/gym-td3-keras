@@ -31,8 +31,8 @@ from utils.memory_buffer import MemoryBuffer
 from utils.noise_process import OrnsteinUhlenbeckProcess
 
 BUFFER_SIZE = 20000
-class ddpgAgent():
-	"""Deep Deterministic Policy Gradient(DDPG) Agent
+class td3Agent():
+	"""Twin Delayed Deep Deterministic Policy Gradient(TD3) Agent
 	"""
 	def __init__(self, env_, is_discrete=False, batch_size=100, w_per=True):
 		# gym environments

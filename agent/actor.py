@@ -33,7 +33,7 @@ from keras.layers import Input, Dense, BatchNormalization, Activation, Lambda
 
 
 class ActorNet():
-	""" Actor Network for DDPG
+	""" Actor Network for TD3
 	"""
 	def __init__(self, in_dim, out_dim, act_range, lr_, tau_):
 		self.obs_dim = in_dim
