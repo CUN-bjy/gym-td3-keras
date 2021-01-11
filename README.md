@@ -79,3 +79,5 @@ python train.py
 [`REVIEW`](https://github.com/CUN-bjy/rl-paper-review/blob/master/reviews/TD3.md)	|	[`PAPER`](https://arxiv.org/pdf/1802.09477.pdf)
 
 [2] [CUN-bjy/gym-ddpg-keras](https://github.com/CUN-bjy/gym-ddpg-keras)
+
+[3] [sfujim/TD3](https://github.com/sfujim/TD3)
