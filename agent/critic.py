@@ -41,14 +41,14 @@ class CriticNet():
 		self.lr = lr_; self.discount_factor=discount_factor;self.tau = tau_
 
 		# initialize critic network and target
-		self.network = self.create_network()
-		self.target_network = self.create_network()
+		self.network_1,self.network_2 = self.create_network(), self.create_network()
+		self.target_network_1, self.target_network_2 = self.create_network(), self.create_network()
 
 		self.optimizer = Adam(self.lr)
 
 		# copy the weights for initialization
-		weights_ = self.network.get_weights()
-		self.target_network.set_weights(weights_)
+		weights_ = self.network_1.get_weights(), self.network_2.get_weights()
+		self.target_network_1.set_weights(weights_[0]); self.target_network_2.set_weights(weights_[1])
 
 		self.critic_loss = None
 
@@ -119,10 +119,13 @@ class CriticNet():
 		self.target_network.set_weights(weights_t)
 
 	def save_network(self, path):
-		self.network.save_weights(path + '_critic.h5')
-		self.target_network.save_weights(path + '_critic_t.h5')
+		self.network_1.save_weights(path + '_critic1.h5')
+		self.target_network_1.save_weights(path + '_critic1_t.h5')
+		self.network_2.save_weights(path + '_critic2.h5')
+		self.target_network_2.save_weights(path + '_critic2_t.h5')
 
 	def load_network(self, path):
-		self.network.load_weights(path + '_critic.h5')
-		self.target_network.load_weights(path + '_critic_t.h5')
-		print(self.network.summary())
+		self.network_1.load_weights(path + '_critic1.h5')
+		self.target_network_1.load_weights(path + '_critic1_t.h5')
+		self.network_2.load_weights(path + '_critic2.h5')
+		self.target_network_2.load_weights(path + '_critic2_t.h5')
