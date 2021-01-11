@@ -8,12 +8,6 @@ STATUS : [`IN PROGRESS`](https://github.com/CUN-bjy/gym-td3-keras/projects/1)
 
 </br>
 
-### Now
-
-*DDPG-Based Repo Transfered.* *<u>Not Started TD3 Implementation Yet.</u>*
-
-</br>
-
 ### [To do](https://github.com/CUN-bjy/gym-td3-keras/projects/1)
 
 *What is differences from DDPG*
