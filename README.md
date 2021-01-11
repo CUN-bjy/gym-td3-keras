@@ -19,7 +19,7 @@ STATUS : [`IN PROGRESS`](https://github.com/CUN-bjy/gym-td3-keras/projects/1)
 *What is differences from DDPG*
 
 1. Overestimation Bias Problem Solved
-   - [ ] double Q-network 
+   - [x] double Q-network 
    - [ ] clipped double q-update
 
 2. Addressing Variance
