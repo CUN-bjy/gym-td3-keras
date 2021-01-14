@@ -14,7 +14,7 @@ STATUS : [`IN PROGRESS`](https://github.com/CUN-bjy/gym-td3-keras/projects/1)
 
 1. Overestimation Bias Problem Solved
    - [x] double Q-network 
-   - [ ] clipped double q-update
+   - [x] clipped double q-update
 
 2. Addressing Variance
    - [ ] delayed policy update
