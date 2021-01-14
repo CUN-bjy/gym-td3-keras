@@ -75,3 +75,5 @@ python train.py
 [2] [CUN-bjy/gym-ddpg-keras](https://github.com/CUN-bjy/gym-ddpg-keras)
 
 [3] [sfujim/TD3](https://github.com/sfujim/TD3)
+
+[4] [quantumiracle/SOTA-RL-Algorithms](https://github.com/quantumiracle/SOTA-RL-Algorithms)

@@ -79,44 +79,38 @@ class CriticNet():
 
 		return Model(inputs,output)
 
-	def Qgradient(self, obs, acts):
-		acts = tf.convert_to_tensor(acts)
-		with tf.GradientTape() as tape:
-			tape.watch(acts)
-			q_values = self.network([obs,acts])
-			q_values = tf.squeeze(q_values)
-		return tape.gradient(q_values, acts)
-
 	def train(self, obs, acts, target):
 		"""Train Q-network for critic on sampled batch
 		"""
 		with tf.GradientTape() as tape:
-			q_values = self.network([obs, acts], training=True)
-			td_error = q_values - target
-			critic_loss = tf.reduce_mean(tf.math.square(td_error))
-			tf.print("critic loss :",critic_loss)
-			self.critic_loss = float(critic_loss)
+			q1_values = self.network_1([obs, acts], training=True)
+			q2_values = self.network_2([obs, acts], training=True)
 
-		critic_grad = tape.gradient(critic_loss, self.network.trainable_variables)  # compute critic gradient
-		self.optimizer.apply_gradients(zip(critic_grad, self.network.trainable_variables))
+			critic_loss_1 = tf.reduce_mean(tf.math.square(q1_values - target))
+			critic_loss_2 = tf.reduce_mean(tf.math.square(q2_values - target))
+			
+			tf.print("critic loss :",critic_loss_1,critic_loss_2)
+			self.critic_loss = float(min(critic_loss_1,critic_loss_2))
 
-	def predict(self, obs):
-		"""Predict Q-value from approximation function(Q-network)
-		"""
-		return self.network.predict(obs)
+		critic_grad_1 = tape.gradient(critic_loss_1, self.network_1.trainable_variables)  # compute critic gradient
+		critic_grad_2 = tape.gradient(critic_loss_2, self.network_2.trainable_variables)  # compute critic gradient
+		
+		self.optimizer.apply_gradients(zip(critic_grad_1, self.network_1.trainable_variables))
+		self.optimizer.apply_gradients(zip(critic_grad_2, self.network_2.trainable_variables))
 
-	def target_predict(self, new_obs):
-		"""Predict target Q-value from approximation function(Q-network)
-		"""
-		return self.target_network.predict(new_obs)
 
 	def target_update(self):
 		""" soft target update for training target critic network
 		"""
-		weights, weights_t = self.network.get_weights(), self.target_network.get_weights()
+		weights, weights_t = self.network_1.get_weights(), self.target_network_1.get_weights()
 		for i in range(len(weights)):
 			weights_t[i] = self.tau*weights[i] + (1-self.tau)*weights_t[i]
-		self.target_network.set_weights(weights_t)
+		self.target_network_1.set_weights(weights_t)
+
+		weights, weights_t = self.network_2.get_weights(), self.target_network_2.get_weights()
+		for i in range(len(weights)):
+			weights_t[i] = self.tau*weights[i] + (1-self.tau)*weights_t[i]
+		self.target_network_2.set_weights(weights_t)
 
 	def save_network(self, path):
 		self.network_1.save_weights(path + '_critic1.h5')

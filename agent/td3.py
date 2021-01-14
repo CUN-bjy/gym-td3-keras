@@ -72,12 +72,8 @@ class td3Agent():
 		# update critic
 		self.critic.train(obs, acts, critic_target)
 
-		# get next action and Q-value Gradient
-		n_actions = self.actor.network.predict(obs)
-		q_grads = self.critic.Qgradient(obs, n_actions)
-
 		# update actor
-		self.actor.train(obs,self.critic.network,q_grads)
+		self.actor.train(obs,self.critic.network_1)
 
 		# update target networks
 		self.actor.target_update()
@@ -91,10 +87,12 @@ class td3Agent():
 			states, actions, rewards, dones, new_states, idx = self.sample_batch(self.batch_size)
 
 			# get target q-value using target network
-			q_vals = self.critic.target_predict([new_states,self.actor.target_predict(new_states)])
+			q1_vals = self.critic.target_network_1.predict([new_states,self.actor.target_predict(new_states)])
+			q2_vals = self.critic.target_network_2.predict([new_states,self.actor.target_predict(new_states)])
 
 			# bellman iteration for target critic value
-			critic_target = np.asarray(q_vals)
+			print(q1_vals.shape,q2_vals.shape)
+			critic_target = np.asarray(np.min(np.vstack([q1_vals,q2_vals]),axis=0))
 			for i in range(q_vals.shape[0]):
 				if dones[i]:
 					critic_target[i] = rewards[i]
@@ -118,7 +116,7 @@ class td3Agent():
 		if self.with_per:
 			q_val = self.critic.network([np.expand_dims(obs,axis=0),self.actor.predict(obs)])
 			next_action = self.actor.target_network.predict(np.expand_dims(new_obs, axis=0))
-			q_val_t = self.critic.target_predict([np.expand_dims(new_obs,axis=0), next_action])
+			q_val_t = self.critic.target_network.predict([np.expand_dims(new_obs,axis=0), next_action])
 			new_val = reward + self.discount_factor * q_val_t
 			td_error = abs(new_val - q_val)[0]
 		else:
