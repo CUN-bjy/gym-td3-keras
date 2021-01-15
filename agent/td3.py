@@ -90,10 +90,11 @@ class td3Agent():
 			q1_vals = self.critic.target_network_1.predict([new_states,self.actor.target_predict(new_states)])
 			q2_vals = self.critic.target_network_2.predict([new_states,self.actor.target_predict(new_states)])
 
+			print(q1_vals.transpose(),q2_vals.transpose())
 			# bellman iteration for target critic value
-			print(q1_vals.shape,q2_vals.shape)
-			critic_target = np.asarray(np.min(np.vstack([q1_vals,q2_vals]),axis=0))
-			for i in range(q_vals.shape[0]):
+			q_vals = np.min(np.vstack([q1_vals.transpose(),q2_vals.transpose()]),axis=0)
+			critic_target = np.asarray(q_vals)
+			for i in range(q1_vals.shape[0]):
 				if dones[i]:
 					critic_target[i] = rewards[i]
 				else:
