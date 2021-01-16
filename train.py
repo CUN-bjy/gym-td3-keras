@@ -106,16 +106,16 @@ def model_train(pretrained_):
 				# store the results to buffer	
 				agent.memorize(obs, a, reward, done, new_obs)
 
+				# experience replay from buffer & network update
+				agent.replay()
+
 				# grace finish and go to t+1 time
 				obs = new_obs
 				epi_reward = epi_reward + reward
 
-				agent.replay(1)
-
 				# check if the episode is finished
 				if done or (t == steps-1):
 					print("Episode#%d, steps:%d, rewards:%f"%(epi,t,epi_reward))
-					# agent.replay(1)
 
 					# save weights at the new records performance
 					if epi_reward >= max_reward:

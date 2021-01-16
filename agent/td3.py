@@ -34,7 +34,7 @@ BUFFER_SIZE = 20000
 class td3Agent():
 	"""Twin Delayed Deep Deterministic Policy Gradient(TD3) Agent
 	"""
-	def __init__(self, env_, is_discrete=False, batch_size=100, w_per=True):
+	def __init__(self, env_, is_discrete=False, batch_size=100, w_per=True, update_delay=2):
 		# gym environments
 		self.env = env_
 		self.discrete = is_discrete
@@ -56,6 +56,10 @@ class td3Agent():
 		# OU-Noise-Process
 		self.noise = OrnsteinUhlenbeckProcess(size=self.act_dim)
 
+		# for Delayed Policy Update
+		self._update_step = 0
+		self._target_update_interval = update_delay
+
 	###################################################
 	# Network Related
 	###################################################
@@ -72,38 +76,39 @@ class td3Agent():
 		# update critic
 		self.critic.train(obs, acts, critic_target)
 
-		# update actor
-		self.actor.train(obs,self.critic.network_1)
+		if self._update_step % self._target_update_interval == 0:
+			# update actor
+			self.actor.train(obs,self.critic.network_1)
 
-		# update target networks
-		self.actor.target_update()
-		self.critic.target_update()
+			# update target networks
+			self.actor.target_update()
+			self.critic.target_update()
+		self._update_step = self._update_step + 1
 
-	def replay(self, replay_num_):
+	def replay(self):
 		if self.with_per and (self.buffer.size() <= self.batch_size): return
 
-		for _ in range(replay_num_):
-			# sample from buffer
-			states, actions, rewards, dones, new_states, idx = self.sample_batch(self.batch_size)
+		# sample from buffer
+		states, actions, rewards, dones, new_states, idx = self.sample_batch(self.batch_size)
 
-			# get target q-value using target network
-			q1_vals = self.critic.target_network_1.predict([new_states,self.actor.target_predict(new_states)])
-			q2_vals = self.critic.target_network_2.predict([new_states,self.actor.target_predict(new_states)])
+		# get target q-value using target network
+		q1_vals = self.critic.target_network_1.predict([new_states,self.actor.target_predict(new_states)])
+		q2_vals = self.critic.target_network_2.predict([new_states,self.actor.target_predict(new_states)])
 
-			# bellman iteration for target critic value
-			q_vals = np.min(np.vstack([q1_vals.transpose(),q2_vals.transpose()]),axis=0)
-			critic_target = np.asarray(q_vals)
-			for i in range(q1_vals.shape[0]):
-				if dones[i]:
-					critic_target[i] = rewards[i]
-				else:
-					critic_target[i] = self.discount_factor * q_vals[i] + rewards[i]
+		# bellman iteration for target critic value
+		q_vals = np.min(np.vstack([q1_vals.transpose(),q2_vals.transpose()]),axis=0)
+		critic_target = np.asarray(q_vals)
+		for i in range(q1_vals.shape[0]):
+			if dones[i]:
+				critic_target[i] = rewards[i]
+			else:
+				critic_target[i] = self.discount_factor * q_vals[i] + rewards[i]
 
-				if self.with_per:
-					self.buffer.update(idx[i], abs(q_vals[i]-critic_target[i]))
+			if self.with_per:
+				self.buffer.update(idx[i], abs(q_vals[i]-critic_target[i]))
 
-			# train(or update) the actor & critic and target networks
-			self.update_networks(states, actions, critic_target)
+		# train(or update) the actor & critic and target networks
+		self.update_networks(states, actions, critic_target)
 
 
 	####################################################
