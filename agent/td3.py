@@ -77,6 +77,7 @@ class td3Agent():
 		self.critic.train(obs, acts, critic_target)
 
 		if self._update_step % self._target_update_interval == 0:
+			print("Policy Update!")
 			# update actor
 			self.actor.train(obs,self.critic.network_1)
 

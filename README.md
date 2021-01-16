@@ -17,7 +17,7 @@ STATUS : [`IN PROGRESS`](https://github.com/CUN-bjy/gym-td3-keras/projects/1)
    - [x] clipped double q-update
 
 2. Addressing Variance
-   - [ ] delayed policy update
+   - [x] delayed policy update
    - [ ] target policy smoothing
 
 </br>
