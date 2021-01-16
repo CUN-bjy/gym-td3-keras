@@ -18,7 +18,7 @@ STATUS : [`IN PROGRESS`](https://github.com/CUN-bjy/gym-td3-keras/projects/1)
 
 2. Addressing Variance
    - [x] delayed policy update
-   - [ ] target policy smoothing
+   - [x] target policy smoothing
 
 </br>
 
