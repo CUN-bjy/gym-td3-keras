@@ -84,21 +84,19 @@ class CriticNet():
 		"""
 		with tf.GradientTape() as tape:
 			q1_values = self.network_1([obs, acts], training=True)
-			q2_values = self.network_2([obs, acts], training=True)
-
 			critic_loss_1 = tf.reduce_mean(tf.math.square(q1_values - target))
-			critic_loss_2 = tf.reduce_mean(tf.math.square(q2_values - target))
-			
-			tf.print(q1_values, q2_values, target)
-			tf.print("critic loss :",critic_loss_1,critic_loss_2)
-			self.critic_loss = float(min(critic_loss_1,critic_loss_2))
-
 		critic_grad_1 = tape.gradient(critic_loss_1, self.network_1.trainable_variables)  # compute critic gradient
-		# critic_grad_2 = tape.gradient(critic_loss_2, self.network_2.trainable_variables)  # compute critic gradient
+
+		with tf.GradientTape() as tape:
+			q2_values = self.network_2([obs, acts], training=True)
+			critic_loss_2 = tf.reduce_mean(tf.math.square(q2_values - target))
+		critic_grad_2 = tape.gradient(critic_loss_2, self.network_2.trainable_variables)  # compute critic gradient
 		
 		self.optimizer.apply_gradients(zip(critic_grad_1, self.network_1.trainable_variables))
-		# self.optimizer.apply_gradients(zip(critic_grad_2, self.network_2.trainable_variables))
+		self.optimizer.apply_gradients(zip(critic_grad_2, self.network_2.trainable_variables))
 
+		tf.print("critic loss :",critic_loss_1,critic_loss_2)
+		self.critic_loss = float(min(critic_loss_1,critic_loss_2))
 
 	def target_update(self):
 		""" soft target update for training target critic network
