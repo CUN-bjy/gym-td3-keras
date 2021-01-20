@@ -20,7 +20,7 @@ STATUS : [`IN PROGRESS`](https://github.com/CUN-bjy/gym-td3-keras/projects/1)
    - [x] delayed policy update
    - [x] target policy smoothing
 
-*Training Test on Simulation*
+*Test on Simulation*
 
 - [ ] *RoboschoolInvertedPendulum-v1*
 - [ ] *RoboschoolHopper-v1*
