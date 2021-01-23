@@ -63,12 +63,12 @@ class CriticNet():
 		concat = Concatenate(axis=-1)(inputs)
 
 		# hidden layer 1
-		h1_ = Dense(24, kernel_initializer=GlorotNormal(), kernel_regularizer=l2(0.01))(concat)
+		h1_ = Dense(300, kernel_initializer=GlorotNormal(), kernel_regularizer=l2(0.01))(concat)
 		h1_b = BatchNormalization()(h1_)
 		h1 = Activation('relu')(h1_b)
 
 		# hidden_layer 2
-		h2_ = Dense(24, kernel_initializer=GlorotNormal(), kernel_regularizer=l2(0.01))(h1)
+		h2_ = Dense(400, kernel_initializer=GlorotNormal(), kernel_regularizer=l2(0.01))(h1)
 		h2_b = BatchNormalization()(h2_)
 		h2 = Activation('relu')(h2_b)
 
@@ -86,13 +86,13 @@ class CriticNet():
 			q1_values = self.network_1([obs, acts], training=True)
 			critic_loss_1 = tf.reduce_mean(tf.math.square(q1_values - target))
 		critic_grad_1 = tape.gradient(critic_loss_1, self.network_1.trainable_variables)  # compute critic gradient
-
+		self.optimizer.apply_gradients(zip(critic_grad_1, self.network_1.trainable_variables))
+		
 		with tf.GradientTape() as tape:
 			q2_values = self.network_2([obs, acts], training=True)
 			critic_loss_2 = tf.reduce_mean(tf.math.square(q2_values - target))
 		critic_grad_2 = tape.gradient(critic_loss_2, self.network_2.trainable_variables)  # compute critic gradient
 		
-		self.optimizer.apply_gradients(zip(critic_grad_1, self.network_1.trainable_variables))
 		self.optimizer.apply_gradients(zip(critic_grad_2, self.network_2.trainable_variables))
 
 		tf.print("critic loss :",critic_loss_1,critic_loss_2)

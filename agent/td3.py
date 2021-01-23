@@ -46,15 +46,13 @@ class td3Agent():
 
 		# initialize actor & critic and its targets
 		self.discount_factor = 0.99
-		self.actor = ActorNet(self.obs_dim, self.act_dim, self.action_bound, lr_=3e-4,tau_=5e-3)
-		self.critic = CriticNet(self.obs_dim, self.act_dim, lr_=3e-4,tau_=5e-3,discount_factor=self.discount_factor)
+		self.actor = ActorNet(self.obs_dim, self.act_dim, self.action_bound, lr_=1e-4,tau_=5e-3)
+		self.critic = CriticNet(self.obs_dim, self.act_dim, lr_=1e-3,tau_=5e-3,discount_factor=self.discount_factor)
 
 		# Experience Buffer
 		self.buffer = MemoryBuffer(BUFFER_SIZE, with_per=w_per)
 		self.with_per = w_per
 		self.batch_size = batch_size
-		# OU-Noise-Process
-		self.noise = OrnsteinUhlenbeckProcess(size=self.act_dim)
 
 		# for Delayed Policy Update
 		self._update_step = 0
@@ -66,15 +64,16 @@ class td3Agent():
 	def make_action(self, obs, noise=True):
 		""" predict next action from Actor's Policy
 		"""
-		action_ = self.actor.predict(obs)[0]
-		a = np.clip(action_ + self.noise.generate(self._update_step) if noise else 0, -self.action_bound, self.action_bound)
+		action_ = self.actor.predict(obs)[0]; sigma=0.1 # std of gaussian
+		a = np.clip(action_ + np.random.normal(self.action_bound*sigma) if noise else 0, -self.action_bound, self.action_bound)
 		return a
 
 	def make_target_action(self, obs, noise=True):
 		""" predict next action from Actor's Target Policy
 		"""
-		action_ = self.actor.target_predict(obs)
-		a = np.clip(action_ + self.noise.generate(self._update_step) if noise else 0, -self.action_bound, self.action_bound)
+		action_ = self.actor.target_predict(obs); sigma=0.2
+		cliped_noise = np.clip(np.random.normal(self.action_bound*sigma),-self.action_bound*0.5,self.action_bound*0.5)
+		a = np.clip(action_ + cliped_noise if noise else 0, -self.action_bound, self.action_bound)
 		return a
 
 	def update_networks(self, obs, acts, critic_target):
