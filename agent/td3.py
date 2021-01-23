@@ -46,8 +46,8 @@ class td3Agent():
 
 		# initialize actor & critic and its targets
 		self.discount_factor = 0.99
-		self.actor = ActorNet(self.obs_dim, self.act_dim, self.action_bound, lr_=3e-4,tau_=1e-2)
-		self.critic = CriticNet(self.obs_dim, self.act_dim, lr_=3e-4,tau_=1e-2,discount_factor=self.discount_factor)
+		self.actor = ActorNet(self.obs_dim, self.act_dim, self.action_bound, lr_=3e-4,tau_=5e-3)
+		self.critic = CriticNet(self.obs_dim, self.act_dim, lr_=3e-4,tau_=5e-3,discount_factor=self.discount_factor)
 
 		# Experience Buffer
 		self.buffer = MemoryBuffer(BUFFER_SIZE, with_per=w_per)
@@ -100,8 +100,9 @@ class td3Agent():
 		states, actions, rewards, dones, new_states, idx = self.sample_batch(self.batch_size)
 
 		# get target q-value using target network
-		q1_vals = self.critic.target_network_1.predict([new_states,self.make_target_action(new_states)])
-		q2_vals = self.critic.target_network_2.predict([new_states,self.make_target_action(new_states)])
+		new_actions = self.make_target_action(new_states)
+		q1_vals = self.critic.target_network_1.predict([new_states, new_actions])
+		q2_vals = self.critic.target_network_2.predict([new_states, new_actions])
 
 		# bellman iteration for target critic value
 		q_vals = np.min(np.vstack([q1_vals.transpose(),q2_vals.transpose()]),axis=0)
@@ -129,6 +130,7 @@ class td3Agent():
 		"""store experience in the buffer
 		"""
 		if self.with_per:
+			# not implemented for td3, yet.
 			q_val = self.critic.network([np.expand_dims(obs,axis=0),self.actor.predict(obs)])
 			next_action = self.actor.target_network.predict(np.expand_dims(new_obs, axis=0))
 			q_val_t = self.critic.target_network.predict([np.expand_dims(new_obs,axis=0), next_action])
