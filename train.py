@@ -48,7 +48,7 @@ def model_train(pretrained_):
 				'hopper':"RoboschoolHopper-v1",
 				'ant':"RoboschoolAnt-v1"}
 	
-	env = gym.make(models['pendulum'])
+	env = gym.make(models['cartpole'])
 	
 	try:
 		# Ensure action bound is symmetric
@@ -98,7 +98,7 @@ def model_train(pretrained_):
 				env.render()
 				
 				# Make action from the current policy
-				a = agent.make_action(obs, t)#env.action_space.sample()#
+				a = agent.make_action(obs)#env.action_space.sample()#
 				action = np.argmax(a) if is_discrete else a
 
 				# do step on gym at t-time
