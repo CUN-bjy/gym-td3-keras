@@ -45,9 +45,10 @@ def model_train(pretrained_):
 				'pendulum':"RoboschoolInvertedPendulum-v1",
 				'cheetah':"RoboschoolHalfCheetah-v1",
 				'walker':"RoboschoolWalker2d-v1",
-				'hopper':"RoboschoolHopper-v1"}
+				'hopper':"RoboschoolHopper-v1",
+				'ant':"RoboschoolAnt-v1"}
 	
-	env = gym.make(models['hopper'])
+	env = gym.make(models['pendulum'])
 	
 	try:
 		# Ensure action bound is symmetric
