@@ -60,7 +60,7 @@ def model_train(pretrained_):
 		print('Discrete Action Space')
 
 	# Create Agent model
-	agent = td3Agent(env, batch_size=128, w_per=False, is_discrete=is_discrete)
+	agent = td3Agent(env, batch_size=64, w_per=False, is_discrete=is_discrete)
 
 	if not pretrained_ == None:
 		agent.load_weights(pretrained_)
