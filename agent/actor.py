@@ -84,6 +84,7 @@ class ActorNet():
 		with tf.GradientTape() as tape:
 			actions = self.network(obs)
 			actor_loss = -tf.reduce_mean(critic([obs,actions]))
+			tf.print("actor loss :",actor_loss)
 		actor_grad = tape.gradient(actor_loss,self.network.trainable_variables)
 		self.optimizer.apply_gradients(zip(actor_grad,self.network.trainable_variables))
 
