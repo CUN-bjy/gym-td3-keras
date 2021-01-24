@@ -31,10 +31,10 @@ from utils.memory_buffer import MemoryBuffer
 from utils.noise_process import OrnsteinUhlenbeckProcess
 
 BUFFER_SIZE = 20000
-class td3Agent():
-	"""Twin Delayed Deep Deterministic Policy Gradient(TD3) Agent
+class ddpgAgent():
+	"""Deep Deterministic Policy Gradient(DDPG) Agent
 	"""
-	def __init__(self, env_, is_discrete=False, batch_size=100, w_per=True, update_delay=2):
+	def __init__(self, env_, is_discrete=False, batch_size=100, w_per=True):
 		# gym environments
 		self.env = env_
 		self.discrete = is_discrete
@@ -46,34 +46,24 @@ class td3Agent():
 
 		# initialize actor & critic and its targets
 		self.discount_factor = 0.99
-		self.actor = ActorNet(self.obs_dim, self.act_dim, self.action_bound, lr_=3e-4,tau_=5e-3)
-		self.critic = CriticNet(self.obs_dim, self.act_dim, lr_=3e-4,tau_=5e-3,discount_factor=self.discount_factor)
+		self.actor = ActorNet(self.obs_dim, self.act_dim, self.action_bound, lr_=1e-4,tau_=1e-3)
+		self.critic = CriticNet(self.obs_dim, self.act_dim, lr_=1e-3,tau_=1e-3,discount_factor=self.discount_factor)
 
 		# Experience Buffer
 		self.buffer = MemoryBuffer(BUFFER_SIZE, with_per=w_per)
 		self.with_per = w_per
 		self.batch_size = batch_size
-
-		# for Delayed Policy Update
-		self._update_step = 0
-		self._target_update_interval = update_delay
+		# OU-Noise-Process
+		self.noise = OrnsteinUhlenbeckProcess(size=self.act_dim)
 
 	###################################################
 	# Network Related
 	###################################################
-	def make_action(self, obs, noise=True):
+	def make_action(self, obs, t, noise=True):
 		""" predict next action from Actor's Policy
 		"""
-		action_ = self.actor.predict(obs)[0]; sigma=0.1 # std of gaussian
-		a = np.clip(action_ + np.random.normal(0,self.action_bound*sigma) if noise else 0, -self.action_bound, self.action_bound)
-		return a
-
-	def make_target_action(self, obs, noise=True):
-		""" predict next action from Actor's Target Policy
-		"""
-		action_ = self.actor.target_predict(obs); sigma=0.2
-		cliped_noise = np.clip(np.random.normal(0,self.action_bound*sigma),-self.action_bound*0.5,self.action_bound*0.5)
-		a = np.clip(action_ + cliped_noise if noise else 0, -self.action_bound, self.action_bound)
+		action_ = self.actor.predict(obs)[0]
+		a = np.clip(action_ + self.noise.generate(t) if noise else 0, -self.action_bound, self.action_bound)
 		return a
 
 	def update_networks(self, obs, acts, critic_target):
@@ -82,43 +72,40 @@ class td3Agent():
 		# update critic
 		self.critic.train(obs, acts, critic_target)
 
-		if self._update_step % self._target_update_interval == 0:
-			print("Policy Update!")
-			# update actor
-			self.actor.train(obs,self.critic.network_1)
+		# get next action and Q-value Gradient
+		n_actions = self.actor.network.predict(obs)
+		q_grads = self.critic.Qgradient(obs, n_actions)
 
-			# update target networks
-			self.actor.target_update()
-			self.critic.target_update()
-		self._update_step = self._update_step + 1
+		# update actor
+		self.actor.train(obs,self.critic.network,q_grads)
 
-	def replay(self):
+		# update target networks
+		self.actor.target_update()
+		self.critic.target_update()
+
+	def replay(self, replay_num_):
 		if self.with_per and (self.buffer.size() <= self.batch_size): return
 
-		# sample from buffer
-		states, actions, rewards, dones, new_states, idx = self.sample_batch(self.batch_size)
+		for _ in range(replay_num_):
+			# sample from buffer
+			states, actions, rewards, dones, new_states, idx = self.sample_batch(self.batch_size)
 
-		# get target q-value using target network
-		new_actions = self.make_target_action(new_states)
-		q1_vals = self.critic.target_network_1.predict([new_states, new_actions])
-		q2_vals = self.critic.target_network_2.predict([new_states, new_actions])
+			# get target q-value using target network
+			q_vals = self.critic.target_predict([new_states,self.actor.target_predict(new_states)])
 
-		# bellman iteration for target critic value
-		q_vals = np.min(np.vstack([q1_vals.transpose(),q2_vals.transpose()]),axis=0)
-		critic_target = np.asarray(q_vals)
-		# print(np.vstack([q1_vals.transpose(),q2_vals.transpose()]))
-		# print(q_vals)
-		for i in range(q1_vals.shape[0]):
-			if dones[i]:
-				critic_target[i] = rewards[i]
-			else:
-				critic_target[i] = self.discount_factor * q_vals[i] + rewards[i]
+			# bellman iteration for target critic value
+			critic_target = np.asarray(q_vals)
+			for i in range(q_vals.shape[0]):
+				if dones[i]:
+					critic_target[i] = rewards[i]
+				else:
+					critic_target[i] = self.discount_factor * q_vals[i] + rewards[i]
 
-			if self.with_per:
-				self.buffer.update(idx[i], abs(q_vals[i]-critic_target[i]))
+				if self.with_per:
+					self.buffer.update(idx[i], abs(q_vals[i]-critic_target[i]))
 
-		# train(or update) the actor & critic and target networks
-		self.update_networks(states, actions, critic_target)
+			# train(or update) the actor & critic and target networks
+			self.update_networks(states, actions, critic_target)
 
 
 	####################################################
@@ -129,10 +116,9 @@ class td3Agent():
 		"""store experience in the buffer
 		"""
 		if self.with_per:
-			# not implemented for td3, yet.
 			q_val = self.critic.network([np.expand_dims(obs,axis=0),self.actor.predict(obs)])
 			next_action = self.actor.target_network.predict(np.expand_dims(new_obs, axis=0))
-			q_val_t = self.critic.target_network.predict([np.expand_dims(new_obs,axis=0), next_action])
+			q_val_t = self.critic.target_predict([np.expand_dims(new_obs,axis=0), next_action])
 			new_val = reward + self.discount_factor * q_val_t
 			td_error = abs(new_val - q_val)[0]
 		else:

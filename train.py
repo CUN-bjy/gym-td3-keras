@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
-# Implementation of TD3(Twin Delayed Deep Deterministic Policy Gradient) 
+# Implementation of DDPG(Deep Deterministic Policy Gradient) 
 # on OpenAI gym framwork
 
 
@@ -35,7 +35,7 @@ import pandas as pd
 
 import argparse
 
-from agent.td3 import td3Agent
+from agent.ddpg import ddpgAgent
 
 NUM_EPISODES_ = 20000
 
@@ -45,10 +45,9 @@ def model_train(pretrained_):
 				'pendulum':"RoboschoolInvertedPendulum-v1",
 				'cheetah':"RoboschoolHalfCheetah-v1",
 				'walker':"RoboschoolWalker2d-v1",
-				'hopper':"RoboschoolHopper-v1",
-				'ant':"RoboschoolAnt-v1"}
+				'hopper':"RoboschoolHopper-v1"}
 	
-	env = gym.make(models['pendulum'])
+	env = gym.make(models['hopper'])
 	
 	try:
 		# Ensure action bound is symmetric
@@ -60,7 +59,7 @@ def model_train(pretrained_):
 		print('Discrete Action Space')
 
 	# Create Agent model
-	agent = td3Agent(env, batch_size=128, w_per=False, is_discrete=is_discrete)
+	agent = ddpgAgent(env, batch_size=128, w_per=False, is_discrete=is_discrete)
 
 	if not pretrained_ == None:
 		agent.load_weights(pretrained_)
@@ -98,7 +97,7 @@ def model_train(pretrained_):
 				env.render()
 				
 				# Make action from the current policy
-				a = agent.make_action(obs)#env.action_space.sample()#
+				a = agent.make_action(obs, t)#env.action_space.sample()#
 				action = np.argmax(a) if is_discrete else a
 
 				# do step on gym at t-time
@@ -107,16 +106,16 @@ def model_train(pretrained_):
 				# store the results to buffer	
 				agent.memorize(obs, a, reward, done, new_obs)
 
-				# experience replay from buffer & network update
-				agent.replay()
-
 				# grace finish and go to t+1 time
 				obs = new_obs
 				epi_reward = epi_reward + reward
 
+				agent.replay(1)
+
 				# check if the episode is finished
 				if done or (t == steps-1):
 					print("Episode#%d, steps:%d, rewards:%f"%(epi,t,epi_reward))
+					# agent.replay(1)
 
 					# save weights at the new records performance
 					if epi_reward >= max_reward:
@@ -124,7 +123,7 @@ def model_train(pretrained_):
 						dir_path = "%s/weights"%os.getcwd()
 						if not os.path.isdir(dir_path):
 							os.mkdir(dir_path)
-						path = dir_path+'/'+'gym_td3_'
+						path = dir_path+'/'+'gym_ddpg_'
 						agent.save_weights(path + 'ep%d_%f'%(epi,max_reward))
 
 
@@ -145,7 +144,7 @@ def model_train(pretrained_):
 		dir_path = "%s/weights"%os.getcwd()
 		if not os.path.isdir(dir_path):
 			os.mkdir(dir_path)
-		path = dir_path+'/'+'gym_td3_'
+		path = dir_path+'/'+'gym_ddpg_'
 		agent.save_weights(path +'lastest')
 		env.close()
 
@@ -155,7 +154,7 @@ def model_train(pretrained_):
 
 
 argparser = argparse.ArgumentParser(
-	description='Train TD3 Agent on the openai gym')
+	description='Train DDPG Agent on the openai gym')
 
 argparser.add_argument(
 	'-w',	'--weights',help='path to pretrained weights')
