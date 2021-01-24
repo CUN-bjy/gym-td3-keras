@@ -82,16 +82,16 @@ class CriticNet():
 	def train(self, obs, acts, target):
 		"""Train Q-network for critic on sampled batch
 		"""
-		with tf.GradientTape() as tape:
+		with tf.GradientTape() as tape1:
 			q1_values = self.network_1([obs, acts], training=True)
 			critic_loss_1 = tf.reduce_mean(tf.math.square(q1_values - target))
-		critic_grad_1 = tape.gradient(critic_loss_1, self.network_1.trainable_variables)  # compute critic gradient
+		critic_grad_1 = tape1.gradient(critic_loss_1, self.network_1.trainable_variables)  # compute critic gradient
 		self.optimizer.apply_gradients(zip(critic_grad_1, self.network_1.trainable_variables))
 		
-		with tf.GradientTape() as tape:
+		with tf.GradientTape() as tape2:
 			q2_values = self.network_2([obs, acts], training=True)
 			critic_loss_2 = tf.reduce_mean(tf.math.square(q2_values - target))
-		critic_grad_2 = tape.gradient(critic_loss_2, self.network_2.trainable_variables)  # compute critic gradient
+		critic_grad_2 = tape2.gradient(critic_loss_2, self.network_2.trainable_variables)  # compute critic gradient
 		
 		self.optimizer.apply_gradients(zip(critic_grad_2, self.network_2.trainable_variables))
 
