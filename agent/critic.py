@@ -33,7 +33,7 @@ from keras.layers import Input, Dense, Concatenate, Activation, BatchNormalizati
 
 
 class CriticNet():
-	""" Critic Network for DDPG
+	""" Critic Network for TD3
 	"""
 	def __init__(self, in_dim, out_dim, lr_, tau_, discount_factor):
 		self.obs_dim = in_dim

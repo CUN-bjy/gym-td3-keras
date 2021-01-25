@@ -31,8 +31,8 @@ from utils.memory_buffer import MemoryBuffer
 from utils.noise_process import OrnsteinUhlenbeckProcess
 
 BUFFER_SIZE = 20000
-class ddpgAgent():
-	"""Deep Deterministic Policy Gradient(DDPG) Agent
+class td3Agent():
+	"""Twin Delayed Deep Deterministic Policy Gradient(TD3) Agent
 	"""
 	def __init__(self, env_, is_discrete=False, batch_size=100, w_per=True):
 		# gym environments
@@ -116,6 +116,7 @@ class ddpgAgent():
 		"""store experience in the buffer
 		"""
 		if self.with_per:
+			# not implemented for td3, yet.
 			q_val = self.critic.network([np.expand_dims(obs,axis=0),self.actor.predict(obs)])
 			next_action = self.actor.target_network.predict(np.expand_dims(new_obs, axis=0))
 			q_val_t = self.critic.target_predict([np.expand_dims(new_obs,axis=0), next_action])
