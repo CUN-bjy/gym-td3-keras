@@ -60,7 +60,7 @@ def model_train(pretrained_):
 		print('Discrete Action Space')
 
 	# Create Agent model
-	agent = td3Agent(env, batch_size=128, w_per=False, is_discrete=is_discrete)
+	agent = td3Agent(env, batch_size=64, w_per=False, is_discrete=is_discrete)
 
 	if not pretrained_ == None:
 		agent.load_weights(pretrained_)
@@ -98,7 +98,7 @@ def model_train(pretrained_):
 				env.render()
 				
 				# Make action from the current policy
-				a = agent.make_action(obs)#env.action_space.sample()#
+				a = agent.make_action(obs,t)#env.action_space.sample()#
 				action = np.argmax(a) if is_discrete else a
 
 				# do step on gym at t-time

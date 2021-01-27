@@ -46,26 +46,25 @@ class td3Agent():
 
 		# initialize actor & critic and its targets
 		self.discount_factor = 0.99
-		self.actor = ActorNet(self.obs_dim, self.act_dim, self.action_bound, lr_=3e-4,tau_=5e-3)
-		self.critic = CriticNet(self.obs_dim, self.act_dim, lr_=3e-4,tau_=5e-3,discount_factor=self.discount_factor)
+		self.actor = ActorNet(self.obs_dim, self.act_dim, self.action_bound, lr_=1e-4,tau_=1e-3)
+		self.critic = CriticNet(self.obs_dim, self.act_dim, lr_=1e-3,tau_=1e-3,discount_factor=self.discount_factor)
 
 		# Experience Buffer
 		self.buffer = MemoryBuffer(BUFFER_SIZE, with_per=w_per)
 		self.with_per = w_per
 		self.batch_size = batch_size
-
-		# for Delayed Policy Update
-		self._update_step = 0
-		self._target_update_interval = update_delay
+		# OU-Noise-Process
+		self.noise = OrnsteinUhlenbeckProcess(size=self.act_dim)
 
 	###################################################
 	# Network Related
 	###################################################
-	def make_action(self, obs, noise=True):
+	def make_action(self, obs, t, noise=True):
 		""" predict next action from Actor's Policy
 		"""
 		action_ = self.actor.predict(obs)[0]; sigma=0.1 # std of gaussian
 		a = np.clip(action_ + np.random.normal(0,self.action_bound*sigma) if noise else 0, -self.action_bound, self.action_bound)
+		# a = np.clip(action_ + self.noise.generate(t) if noise else 0, -self.action_bound, self.action_bound)
 		return a
 
 	def make_target_action(self, obs, noise=True):
@@ -100,8 +99,9 @@ class td3Agent():
 		states, actions, rewards, dones, new_states, idx = self.sample_batch(self.batch_size)
 
 		# get target q-value using target network
-		new_actions = self.make_target_action(new_states)
-		q_vals = self.critic.target_predict([new_states, new_actions])
+		# next_action = self.actor.target_predict(new_states)
+		next_action = self.make_target_action(new_states)
+		q_vals = self.critic.target_predict([new_states,next_action])
 
 		# bellman iteration for target critic value
 		critic_target = np.asarray(q_vals)
