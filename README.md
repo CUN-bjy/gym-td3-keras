@@ -22,7 +22,6 @@ STATUS : [`IN PROGRESS`](https://github.com/CUN-bjy/gym-td3-keras/projects/1)
 
 *Test on Simulation*
 
-- [ ] CartPole-v1
 - [ ] *RoboschoolInvertedPendulum-v1*
 - [ ] *RoboschoolHopper-v1*
 - [ ] *RoboschoolHalfCheetah-v1*

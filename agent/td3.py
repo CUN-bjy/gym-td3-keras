@@ -56,6 +56,10 @@ class td3Agent():
 		# OU-Noise-Process
 		self.noise = OrnsteinUhlenbeckProcess(size=self.act_dim)
 
+		# for Delayed Policy Update
+		self._update_step = 0
+		self._target_update_interval = update_delay
+
 	###################################################
 	# Network Related
 	###################################################
@@ -81,16 +85,18 @@ class td3Agent():
 		# update critic
 		self.critic.train(obs, acts, critic_target)
 
-		# get next action and Q-value Gradient
-		n_actions = self.actor.network.predict(obs)
-		q_grads = self.critic.Qgradient(obs, n_actions)
+		if self._update_step % self._target_update_interval == 0:
+			# get next action and Q-value Gradient
+			n_actions = self.actor.network.predict(obs)
+			q_grads = self.critic.Qgradient(obs, n_actions)
 
-		# update actor
-		self.actor.train(obs,self.critic.network,q_grads)
+			# update actor
+			self.actor.train(obs,self.critic.network,q_grads)
 
-		# update target networks
-		self.actor.target_update()
-		self.critic.target_update()
+			# update target networks
+			self.actor.target_update()
+			self.critic.target_update()
+		self._update_step = self._update_step + 1
 
 	def replay(self):
 		if self.with_per and (self.buffer.size() <= self.batch_size): return
