@@ -78,7 +78,7 @@ class ActorNet():
 
 		return Model(input_,out)
 
-	def train(self, obs, critic, q_grads):
+	def train(self, obs, critic):
 		""" training Actor's Weights
 		"""
 		with tf.GradientTape() as tape:

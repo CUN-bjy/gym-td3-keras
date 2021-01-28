@@ -34,7 +34,7 @@ BUFFER_SIZE = 20000
 class td3Agent():
 	"""Twin Delayed Deep Deterministic Policy Gradient(TD3) Agent
 	"""
-	def __init__(self, env_, is_discrete=False, batch_size=100, w_per=True, update_delay=2):
+	def __init__(self, env_, is_discrete=False, batch_size=100, w_per=True, update_delay=1):
 		# gym environments
 		self.env = env_
 		self.discrete = is_discrete
@@ -46,8 +46,8 @@ class td3Agent():
 
 		# initialize actor & critic and its targets
 		self.discount_factor = 0.99
-		self.actor = ActorNet(self.obs_dim, self.act_dim, self.action_bound, lr_=1e-4,tau_=1e-3)
-		self.critic = CriticNet(self.obs_dim, self.act_dim, lr_=1e-3,tau_=1e-3,discount_factor=self.discount_factor)
+		self.actor = ActorNet(self.obs_dim, self.act_dim, self.action_bound, lr_=3e-4,tau_=5e-3)
+		self.critic = CriticNet(self.obs_dim, self.act_dim, lr_=3e-4,tau_=5e-3,discount_factor=self.discount_factor)
 
 		# Experience Buffer
 		self.buffer = MemoryBuffer(BUFFER_SIZE, with_per=w_per)
@@ -84,14 +84,9 @@ class td3Agent():
 		"""
 		# update critic
 		self.critic.train(obs, acts, critic_target)
-
 		if self._update_step % self._target_update_interval == 0:
-			# get next action and Q-value Gradient
-			n_actions = self.actor.network.predict(obs)
-			q_grads = self.critic.Qgradient(obs, n_actions)
-
 			# update actor
-			self.actor.train(obs,self.critic.network,q_grads)
+			self.actor.train(obs,self.critic.network_1)
 
 			# update target networks
 			self.actor.target_update()
@@ -105,13 +100,16 @@ class td3Agent():
 		states, actions, rewards, dones, new_states, idx = self.sample_batch(self.batch_size)
 
 		# get target q-value using target network
-		# next_action = self.actor.target_predict(new_states)
-		next_action = self.make_target_action(new_states)
-		q_vals = self.critic.target_predict([new_states,next_action])
+		new_actions = self.make_target_action(new_states)
+		q1_vals = self.critic.target_network_1.predict([new_states, new_actions])
+		q2_vals = self.critic.target_network_2.predict([new_states, new_actions])
 
 		# bellman iteration for target critic value
+		q_vals = np.min(np.vstack([q1_vals.transpose(),q2_vals.transpose()]),axis=0)
 		critic_target = np.asarray(q_vals)
-		for i in range(q_vals.shape[0]):
+		# print(np.vstack([q1_vals.transpose(),q2_vals.transpose()]))
+		# print(q_vals)
+		for i in range(q1_vals.shape[0]):
 			if dones[i]:
 				critic_target[i] = rewards[i]
 			else:
@@ -135,7 +133,7 @@ class td3Agent():
 			# not implemented for td3, yet.
 			q_val = self.critic.network([np.expand_dims(obs,axis=0),self.actor.predict(obs)])
 			next_action = self.actor.target_network.predict(np.expand_dims(new_obs, axis=0))
-			q_val_t = self.critic.target_predict([np.expand_dims(new_obs,axis=0), next_action])
+			q_val_t = self.critic.target_network.predict([np.expand_dims(new_obs,axis=0), next_action])
 			new_val = reward + self.discount_factor * q_val_t
 			td_error = abs(new_val - q_val)[0]
 		else:
