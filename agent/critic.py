@@ -97,6 +97,8 @@ class CriticNet():
 
 		tf.print("critic loss :",critic_loss_1,critic_loss_2)
 		self.critic_loss = float(min(critic_loss_1,critic_loss_2))
+		# tf.print("critic loss :",critic_loss_1)
+		# self.critic_loss = float(critic_loss_1)
 
 	def target_update(self):
 		""" soft target update for training target critic network
