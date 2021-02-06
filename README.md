@@ -6,6 +6,8 @@ Keras Implementation of TD3(Twin Delayed Deep Deterministic Policy Gradient) wit
 
 STATUS : [`IN PROGRESS`](https://github.com/CUN-bjy/gym-td3-keras/projects/1)
 
+This branch is just for debugging, **change the branch to main**.
+
 </br>
 
 ### [To do](https://github.com/CUN-bjy/gym-td3-keras/projects/1)
