@@ -135,8 +135,8 @@ def model_train(pretrained_):
 					logger['critic_loss'].append(agent.critic.critic_loss)
 
 					df = pd.DataFrame(logger)
-					sns.lineplot(ax=ax1,x='episode',y='reward', data=df)
-					sns.lineplot(ax=ax2,x='episode',y='critic_loss', data=df)
+					sns.lineplot(ax=ax1,x='episode',y='reward', data=df); fig1.savefig("%s/weights/reward.png"%os.getcwd(),dpi=300)
+					sns.lineplot(ax=ax2,x='episode',y='critic_loss', data=df); fig2.savefig("%s/weights/critic_loss.png"%os.getcwd(),dpi=300)
 					break;
 
 	except KeyboardInterrupt as e: print(e)
