@@ -34,7 +34,7 @@ BUFFER_SIZE = 20000
 class td3Agent():
 	"""Twin Delayed Deep Deterministic Policy Gradient(TD3) Agent
 	"""
-	def __init__(self, env_, is_discrete=False, batch_size=100, w_per=True, update_delay=1):
+	def __init__(self, env_, is_discrete=False, batch_size=100, w_per=True, update_delay=2):
 		# gym environments
 		self.env = env_
 		self.discrete = is_discrete
@@ -67,8 +67,8 @@ class td3Agent():
 		""" predict next action from Actor's Policy
 		"""
 		action_ = self.actor.predict(obs)[0]; sigma=0.1 # std of gaussian
-		#a = np.clip(action_ + np.random.normal(0,self.action_bound*sigma) if noise else 0, -self.action_bound, self.action_bound)
-		a = np.clip(action_ + self.noise.generate(t) if noise else 0, -self.action_bound, self.action_bound)
+		a = np.clip(action_ + np.random.normal(0,self.action_bound*sigma) if noise else 0, -self.action_bound, self.action_bound)
+		#a = np.clip(action_ + self.noise.generate(t) if noise else 0, -self.action_bound, self.action_bound)
 		return a
 
 	def make_target_action(self, obs, noise=True):
