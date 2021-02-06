@@ -74,7 +74,7 @@ class td3Agent():
 	def make_target_action(self, obs, noise=True):
 		""" predict next action from Actor's Target Policy
 		"""
-		action_ = self.actor.target_predict(obs); sigma=0.2; return action_
+		action_ = self.actor.target_predict(obs); sigma=0.2; #return action_
 		cliped_noise = np.clip(np.random.normal(0,self.action_bound*sigma),-self.action_bound*0.5,self.action_bound*0.5)
 		a = np.clip(action_ + cliped_noise if noise else 0, -self.action_bound, self.action_bound)
 		return a
