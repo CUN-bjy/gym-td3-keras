@@ -67,6 +67,8 @@ def model_train(pretrained_):
 
 	# Initialize Environments
 	steps = 500#env._max_episode_steps # steps per episode
+	before_train_steps = 25e3
+
 	num_act_ = env.action_space.n if is_discrete else env.action_space.shape[0]
 	num_obs_ = env.observation_space.shape[0]
 	print("============ENVIRONMENT===============")
@@ -98,17 +100,20 @@ def model_train(pretrained_):
 				env.render()
 				
 				# Make action from the current policy
-				a = agent.make_action(obs,t)#env.action_space.sample()#
-				action = np.argmax(a) if is_discrete else a
+				if t < before_train_steps:
+					action = env.action_space.sample()
+				else:
+					a = agent.make_action(obs,t)
+					action = np.argmax(a) if is_discrete else a
 
-				# do step on gym at t-time
+				# do step on gym at t-step
 				new_obs, reward, done, info = env.step(action) 
 
 				# store the results to buffer	
-				agent.memorize(obs, a, reward, done, new_obs)
+				agent.memorize(obs, action, reward, done, new_obs)
 
 				# experience replay from buffer & network update
-				agent.replay()
+				if t >= before_train_steps: agent.train()
 
 				# grace finish and go to t+1 time
 				obs = new_obs

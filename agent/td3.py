@@ -93,7 +93,7 @@ class td3Agent():
 			self.critic.target_update()
 		self._update_step = self._update_step + 1
 
-	def replay(self):
+	def train(self):
 		if self.with_per and (self.buffer.size() <= self.batch_size): return
 
 		# sample from buffer
