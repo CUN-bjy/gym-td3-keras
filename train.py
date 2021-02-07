@@ -89,6 +89,7 @@ def model_train(pretrained_):
 		act_range = (env.action_space.high - env.action_space.low) / 2 if not is_discrete else 1.
 		rewards = []; critic_losses = []
 		max_reward = 0
+		total_steps = 0
 		for epi in range(NUM_EPISODES_):
 			print("=========EPISODE # %d =========="%epi)
 			obs = env.reset()
@@ -100,7 +101,7 @@ def model_train(pretrained_):
 				env.render()
 				
 				# Make action from the current policy
-				if t < before_train_steps:
+				if total_steps < before_train_steps:
 					action = env.action_space.sample()
 				else:
 					a = agent.make_action(obs,t)
@@ -113,11 +114,12 @@ def model_train(pretrained_):
 				agent.memorize(obs, action, reward, done, new_obs)
 
 				# experience replay from buffer & network update
-				if t >= before_train_steps: agent.train()
+				if total_steps >= before_train_steps: agent.train()
 
 				# grace finish and go to t+1 time
 				obs = new_obs
 				epi_reward = epi_reward + reward
+				total_steps = total_steps + t
 
 				# check if the episode is finished
 				if done or (t == steps-1):
