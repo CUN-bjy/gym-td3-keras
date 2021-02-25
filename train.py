@@ -67,7 +67,7 @@ def model_train(pretrained_):
 
 	# Initialize Environments
 	steps = 500#env._max_episode_steps # steps per episode
-	before_train_steps = 1e4
+	before_train_steps = 25e3
 
 	num_act_ = env.action_space.n if is_discrete else env.action_space.shape[0]
 	num_obs_ = env.observation_space.shape[0]
